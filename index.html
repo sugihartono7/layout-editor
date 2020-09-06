@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Relayout Project</title>
+        <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="css/simple-sidebar.css" rel="stylesheet" />
+		<style>
+			.draggable {
+				cursor: pointer;
+				opacity: 1;
+			}
+			.draggable:hover {
+				opacity:0.7;
+			}
+		</style>
+    </head>
+
+    <body>
+        <div class="d-flex" id="wrapper">
+            <div class="bg-light border-right" id="sidebar-wrapper">
+                <div class="sidebar-heading" style="border-bottom: 1px solid rgb(236, 189, 189);">Navigation</div>
+                <div class="list-group list-group-flush" >
+					<form action="#" style="padding:10px" enctype="multipart/form-data">
+						<div class="form-group">
+							<select class="form-control" id="upload">
+								<option>- Select File -</option>
+								<option>YOGYA CENTER LT 1.jpg</option>
+								<option>YOGYA CENTER LT 2.jpg</option>
+								<option>YOGYA CENTER LT 3.jpg</option>
+								<option>YOGYA CENTER LT 4.jpg</option>
+							</select>  
+						</div>
+						<div class="form-group">
+							<label for="layout">Add Object :</label>
+							<div class="col-sm-12" style="padding:0px;">
+								<img src="img/camera.png" id="add_camera" class="col-sm-5 img-responsive center draggable" title="Add CCTV Icon" />
+								<img src="img/addtext.png" id="add_text" class="col-sm-5 img-responsive center draggable" title="Add Text" />
+							</div>
+						</div>
+						<button type="button" class="btn btn-warning" id="delete" title="Delete Selected Object">Delete selected</button>
+						<button type="button" class="btn btn-primary" id="save">Save</button>
+					</form>
+					
+                </div>
+			</div>
+			
+            <div id="page-content-wrapper">
+                <div class="container-fluid">
+					<canvas id="c" width="1200" height="700"></canvas>
+				</div>
+            </div>
+        </div>
+
+		<script src="vendor/jquery/jquery.min.js"></script>
+		<script src="fabric.min.js"></script>
+        <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            $("#menu-toggle").click(function (e) {
+                e.preventDefault();
+                $("#wrapper").toggleClass("toggled");
+            });
+		</script>
+		
+		<script>
+			$(document).ready(function(){
+				$("#delete").on("click", function(){
+					canvas.remove(canvas.getActiveObject());
+				});
+
+				$("#add_camera").on("click", function(){
+					var gambar = fabric.Image.fromURL('img/camera_small.jpg', function(oImg) {
+						canvas.add(oImg);
+					});
+				});
+
+				$("#add_text").on("click", function(){
+					var text = '[type text here]';
+					var textWithBackground = new fabric.IText(text, {
+						textBackgroundColor: 'rgb(0,200,0)',
+						fontSize: 30,
+						fontFamily: 'sans-serif'
+					});
+
+					// textWithBackground.on('mouseup', function() {
+					// 	alert();
+					// });
+			
+					canvas.add(textWithBackground);
+				});
+
+				$('html').keyup(function(e){
+					if(e.keyCode == 46) {
+						canvas.remove(canvas.getActiveObject());
+					}
+				});
+
+				$('#upload').change(function(){
+					var filename = "layout/"+$(this).val();
+					if (filename != "" && filename != null){
+						fabric.Image.fromURL(filename, function(oImg) {
+							oImg.scaleToWidth(canvas.width);
+							oImg.scaleToHeight(canvas.height);
+							oImg.set({ 
+								hasControls: false, 
+								hasBorders: false, 
+								selectable: false,
+							});
+							canvas.add(oImg);
+							canvas.sendToBack(oImg)
+						});
+					}else {
+						alert('no file choosen');
+					}
+				});
+
+				$("#save").on("click", function(){
+					alert('coming soon')
+				});
+
+				// $.ajax({
+				// 	url: "layout/",
+				// 	success: function(data){
+				// 		console.log(data);
+				// 	}
+				// });
+
+			});
+			
+			var canvas = new fabric.Canvas('c');
+			
+			canvas.on('mouse:wheel', function(opt) {
+				var delta = opt.e.deltaY;
+				var zoom = canvas.getZoom();
+				zoom *= 0.999 ** delta;
+				if (zoom > 20) zoom = 20;
+				if (zoom < 0.01) zoom = 0.01;
+				canvas.setZoom(zoom);
+				opt.e.preventDefault();
+				opt.e.stopPropagation();
+			});
+			
+			canvas.on('mouse:down', function(opt) {
+				var evt = opt.e;
+				if (evt.altKey === true) {
+					this.isDragging = true;
+					this.selection = false;
+					this.lastPosX = evt.clientX;
+					this.lastPosY = evt.clientY;
+				}
+			});
+			canvas.on('mouse:move', function(opt) {
+				if (this.isDragging) {
+					var e = opt.e;
+					var vpt = this.viewportTransform;
+					vpt[4] += e.clientX - this.lastPosX;
+					vpt[5] += e.clientY - this.lastPosY;
+					this.requestRenderAll();
+					this.lastPosX = e.clientX;
+					this.lastPosY = e.clientY;
+				}
+			});
+			canvas.on('mouse:up', function(opt) {
+				this.setViewportTransform(this.viewportTransform);
+					this.isDragging = false;
+					this.selection = true;
+			});
+	
+
+		</script>
+    </body>
+</html>
